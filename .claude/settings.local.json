@@ -5,7 +5,10 @@
       "Bash(then echo 'Found .env file')",
       "Bash(else echo \"No .env file found in current directory\")",
       "Bash(fi)",
-      "Bash(wsl docker ps:*)"
+      "Bash(wsl docker ps:*)",
+      "Bash(if [ -d \"c:/Users/Bailey/Documents/GitHub/n8n-install/postgres\" ])",
+      "Bash(then echo \"Directory exists\")",
+      "Bash(else echo \"Directory does not exist\")"
     ],
     "deny": [],
     "ask": []

@@ -12,12 +12,15 @@ This is **n8n-install**, a Docker Compose-based installer that provides a compre
 - **No exposed ports**: Services do NOT publish ports directly. All external HTTPS access is routed through Caddy reverse proxy on ports 80/443.
 - **Shared secrets**: Core services (Postgres, Redis/Valkey, Caddy) are always included. Other services are optional and selected during installation.
 - **Queue-based n8n**: n8n runs in `queue` mode with Redis, Postgres, and dynamically scaled workers (`N8N_WORKER_COUNT`).
+- **Isolated networking**: All services run on a dedicated `n8nInstall_network` to avoid conflicts with other Docker containers on the host.
+- **Prefixed naming**: All container names and volumes are prefixed with `n8nInstall_` for easy identification and management (e.g., `n8nInstall_postgres`, `n8nInstall_n8n_storage`).
 
 ### Key Files
 
 - `docker-compose.yml`: Service definitions with profiles
 - `Caddyfile`: Reverse proxy configuration with automatic HTTPS
 - `.env`: Generated secrets and configuration (from `.env.example`)
+- `postgres/init-databases.sql`: Database initialization script (creates langfuse database)
 - `scripts/install.sh`: Main installation orchestrator
 - `scripts/04_wizard.sh`: Interactive service selection using whiptail
 - `scripts/03_generate_secrets.sh`: Secret generation and bcrypt hashing

@@ -1,44 +1,51 @@
+networks:
+  n8n_network:
+    name: n8nInstall_network
+    driver: bridge
+
 volumes:
-  caddy-config:
-  caddy-data:
-  comfyui_data:
-  flowise:
-  grafana:
-  langfuse_clickhouse_data:
-  langfuse_clickhouse_logs:
-  langfuse_minio_data:
-  langfuse_postgres_data:
-  letta_data:
-  libretranslate_api_keys:
-  lightrag_data:
-  lightrag_inputs:
-  libretranslate_models:
-  n8n_storage:
-  ollama_storage:
-  open-webui:
-  paddle_cache:
-  paddleocr_cache:
-  paddlex_data:
-  portainer_data:
-  postgresus_data:
-  postiz-config:
-  postiz-uploads:
-  prometheus_data:
-  qdrant_storage:
-  ragflow_data:
-  ragflow_elasticsearch_data:
-  ragflow_minio_data:
-  ragflow_mysql_data:
-  ragflow_redis_data:
-  valkey-data:
-  weaviate_data:
+  n8nInstall_caddy-config:
+  n8nInstall_caddy-data:
+  n8nInstall_comfyui_data:
+  n8nInstall_flowise:
+  n8nInstall_grafana:
+  n8nInstall_langfuse_clickhouse_data:
+  n8nInstall_langfuse_clickhouse_logs:
+  n8nInstall_langfuse_minio_data:
+  n8nInstall_postgres_data:
+  n8nInstall_letta_data:
+  n8nInstall_libretranslate_api_keys:
+  n8nInstall_lightrag_data:
+  n8nInstall_lightrag_inputs:
+  n8nInstall_libretranslate_models:
+  n8nInstall_n8n_storage:
+  n8nInstall_ollama_storage:
+  n8nInstall_open-webui:
+  n8nInstall_paddle_cache:
+  n8nInstall_paddleocr_cache:
+  n8nInstall_paddlex_data:
+  n8nInstall_portainer_data:
+  n8nInstall_postgresus_data:
+  n8nInstall_postiz-config:
+  n8nInstall_postiz-uploads:
+  n8nInstall_prometheus_data:
+  n8nInstall_qdrant_storage:
+  n8nInstall_ragflow_data:
+  n8nInstall_ragflow_elasticsearch_data:
+  n8nInstall_ragflow_minio_data:
+  n8nInstall_ragflow_mysql_data:
+  n8nInstall_ragflow_redis_data:
+  n8nInstall_valkey-data:
+  n8nInstall_weaviate_data:
 
 x-n8n: &service-n8n
   build:
     context: ./n8n
     pull: true
+  networks:
+    - n8n_network
   environment: &service-n8n-env
-    DB_POSTGRESDB_DATABASE: postgres
+    DB_POSTGRESDB_DATABASE: n8n
     DB_POSTGRESDB_HOST: postgres
     DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
     DB_POSTGRESDB_USER: postgres
@@ -79,21 +86,25 @@ x-n8n: &service-n8n
 
 x-ollama: &service-ollama
   image: ollama/ollama:latest
-  container_name: ollama
+  container_name: n8nInstall_ollama
   restart: unless-stopped
+  networks:
+    - n8n_network
   environment:
     - OLLAMA_CONTEXT_LENGTH=8192
     - OLLAMA_FLASH_ATTENTION=1
     - OLLAMA_KV_CACHE_TYPE=q8_0
     - OLLAMA_MAX_LOADED_MODELS=2
   volumes:
-    - ollama_storage:/root/.ollama
+    - n8nInstall_ollama_storage:/root/.ollama
 
 x-init-ollama: &init-ollama
   image: ollama/ollama:latest
-  container_name: ollama-pull-llama
+  container_name: n8nInstall_ollama-pull-llama
+  networks:
+    - n8n_network
   volumes:
-    - ollama_storage:/root/.ollama
+    - n8nInstall_ollama_storage:/root/.ollama
   entrypoint: /bin/sh
   command:
     - "-c"
@@ -103,7 +114,7 @@ services:
   flowise:
     image: flowiseai/flowise
     restart: unless-stopped
-    container_name: flowise
+    container_name: n8nInstall_flowise
     profiles: ["flowise"]
     environment:
       - PORT=3001
@@ -112,24 +123,28 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ~/.flowise:/root/.flowise
+      - n8nInstall_flowise:/root/.flowise
     entrypoint: /bin/sh -c "sleep 3; flowise start"
+    networks:
+      - n8n_network
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     restart: unless-stopped
-    container_name: open-webui
+    container_name: n8nInstall_open-webui
     profiles: ["open-webui"]
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - open-webui:/app/backend/data
+      - n8nInstall_open-webui:/app/backend/data
+    networks:
+      - n8n_network
 
   n8n-import:
     <<: *service-n8n
-    container_name: n8n-import
+    container_name: n8nInstall_n8n-import
     profiles: ["n8n"]
     environment:
       <<: *service-n8n-env
@@ -142,19 +157,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - n8n_network
 
   n8n:
     <<: *service-n8n
-    container_name: n8n
+    container_name: n8nInstall_n8n
     profiles: ["n8n"]
     restart: unless-stopped
     volumes:
-      - n8n_storage:/home/node/.n8n
+      - n8nInstall_n8n_storage:/home/node/.n8n
       - ./n8n/backup:/backup
       - ./shared:/data/shared
     depends_on:
       n8n-import:
         condition: service_completed_successfully
+    networks:
+      - n8n_network
 
   n8n-worker:
     <<: *service-n8n
@@ -162,7 +181,7 @@ services:
     restart: unless-stopped
     command: worker
     volumes:
-      - n8n_storage:/home/node/.n8n
+      - n8nInstall_n8n_storage:/home/node/.n8n
       - ./shared:/data/shared
     depends_on:
       n8n:
@@ -173,22 +192,26 @@ services:
         condition: service_healthy
     deploy:
       replicas: ${N8N_WORKER_COUNT:-1}
+    networks:
+      - n8n_network
 
   qdrant:
     image: qdrant/qdrant
-    container_name: qdrant
+    container_name: n8nInstall_qdrant
     profiles: ["qdrant"]
     restart: unless-stopped
     volumes:
-      - qdrant_storage:/qdrant/storage
+      - n8nInstall_qdrant_storage:/qdrant/storage
     environment:
       - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
     expose:
       - "6333"
+    networks:
+      - n8n_network
 
   neo4j:
     image: neo4j:latest
-    container_name: neo4j
+    container_name: n8nInstall_neo4j
     profiles: ["neo4j"]
     restart: unless-stopped
     volumes:
@@ -211,9 +234,11 @@ services:
       nofile:
         soft: 40000
         hard: 40000
+    networks:
+      - n8n_network
 
   caddy:
-    container_name: caddy
+    container_name: n8nInstall_caddy
     image: docker.io/library/caddy:2-alpine
     ports:
       - "80:80"
@@ -223,8 +248,8 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./caddy-addon:/etc/caddy/addons:ro
-      - caddy-data:/data:rw
-      - caddy-config:/config:rw
+      - n8nInstall_caddy-data:/data:rw
+      - n8nInstall_caddy-config:/config:rw
     environment:
       - COMFYUI_HOSTNAME=${COMFYUI_HOSTNAME}
       - COMFYUI_PASSWORD_HASH=${COMFYUI_PASSWORD_HASH}
@@ -274,10 +299,12 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
+    networks:
+      - n8n_network
 
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared
+    container_name: n8nInstall_cloudflared
     profiles: ["cloudflare-tunnel"]
     restart: unless-stopped
     command: tunnel --no-autoupdate run
@@ -288,6 +315,8 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
+    networks:
+      - n8n_network
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
@@ -345,6 +374,8 @@ services:
       REDIS_TLS_CA: ${REDIS_TLS_CA:-/certs/ca.crt}
       REDIS_TLS_CERT: ${REDIS_TLS_CERT:-/certs/redis.crt}
       REDIS_TLS_KEY: ${REDIS_TLS_KEY:-/certs/redis.key}
+    networks:
+      - n8n_network
 
   langfuse-web:
     image: langfuse/langfuse:3
@@ -365,6 +396,8 @@ services:
       LANGFUSE_INIT_USER_NAME: ${LANGFUSE_INIT_USER_NAME:-}
       LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_INIT_USER_PASSWORD:-}
       AUTH_DISABLE_SIGNUP: ${AUTH_DISABLE_SIGNUP:-true}
+    networks:
+      - n8n_network
 
   clickhouse:
     image: clickhouse/clickhouse-server
@@ -376,14 +409,16 @@ services:
       CLICKHOUSE_USER: clickhouse
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
     volumes:
-      - langfuse_clickhouse_data:/var/lib/clickhouse
-      - langfuse_clickhouse_logs:/var/log/clickhouse-server
+      - n8nInstall_langfuse_clickhouse_data:/var/lib/clickhouse
+      - n8nInstall_langfuse_clickhouse_logs:/var/log/clickhouse-server
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 1s
+    networks:
+      - n8n_network
 
   minio:
     image: minio/minio
@@ -396,16 +431,18 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
-      - langfuse_minio_data:/data
+      - n8nInstall_langfuse_minio_data:/data
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 1s
       timeout: 5s
       retries: 5
       start_period: 1s
+    networks:
+      - n8n_network
 
   postgres:
-    container_name: postgres
+    container_name: n8nInstall_postgres
     image: postgres:${POSTGRES_VERSION:-17}
     restart: unless-stopped
     healthcheck:
@@ -418,16 +455,18 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres
     volumes:
-      # TODO: Rename to postgres_data
-      - langfuse_postgres_data:/var/lib/postgresql/data
+      - n8nInstall_postgres_data:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+    networks:
+      - n8n_network
 
   redis:
-    container_name: redis
+    container_name: n8nInstall_redis
     image: docker.io/valkey/valkey:8-alpine
     command: valkey-server --save 30 1 --loglevel warning
     restart: unless-stopped
     volumes:
-      - valkey-data:/data
+      - n8nInstall_valkey-data:/data
     cap_drop:
       - ALL
     cap_add:
@@ -444,9 +483,11 @@ services:
       interval: 3s
       timeout: 10s
       retries: 10
+    networks:
+      - n8n_network
 
   searxng:
-    container_name: searxng
+    container_name: n8nInstall_searxng
     image: docker.io/searxng/searxng:latest
     profiles: ["searxng"]
     restart: unless-stopped
@@ -466,6 +507,8 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
+    networks:
+      - n8n_network
 
   ollama-cpu:
     profiles: ["cpu"]
@@ -511,18 +554,20 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: n8nInstall_prometheus
     profiles: ["monitoring"]
     restart: unless-stopped
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
+      - n8nInstall_prometheus_data:/prometheus
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - n8n_network
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: node-exporter
+    container_name: n8nInstall_node-exporter
     profiles: ["monitoring"]
     restart: unless-stopped
     volumes:
@@ -535,10 +580,12 @@ services:
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
     expose:
       - 9100
+    networks:
+      - n8n_network
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
+    container_name: n8nInstall_cadvisor
     profiles: ["monitoring"]
     restart: unless-stopped
     volumes:
@@ -548,27 +595,31 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     expose:
       - 8080
+    networks:
+      - n8n_network
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
+    container_name: n8nInstall_grafana
     profiles: ["monitoring"]
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_PROVISIONING_PATH=/etc/grafana/provisioning
     volumes:
-      - grafana:/var/lib/grafana
+      - n8nInstall_grafana:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards # Standard path often used, let's use Grafana's managed dashboards dir
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       - prometheus
+    networks:
+      - n8n_network
 
   crawl4ai:
     image: unclecode/crawl4ai:latest # Use official image
-    container_name: crawl4ai
+    container_name: n8nInstall_crawl4ai
     profiles: ["crawl4ai"]
     restart: unless-stopped
     shm_size: 1g # Recommended for browser operations
@@ -579,10 +630,12 @@ services:
         limits:
           cpus: "1.0"
           memory: 4G # Increased based on documentation recommendation
+    networks:
+      - n8n_network
 
   gotenberg:
     image: gotenberg/gotenberg:8
-    container_name: gotenberg
+    container_name: n8nInstall_gotenberg
     profiles: ["gotenberg"]
     restart: unless-stopped
     environment:
@@ -592,14 +645,16 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - n8n_network
 
   letta:
     image: letta/letta:latest
-    container_name: letta
+    container_name: n8nInstall_letta
     profiles: ["letta"]
     restart: unless-stopped
     volumes:
-      - letta_data:/var/lib/postgresql/data
+      - n8nInstall_letta_data:/var/lib/postgresql/data
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -608,14 +663,16 @@ services:
       LETTA_SERVER_PASSWORD: ${LETTA_SERVER_PASSWORD:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - n8n_network
 
   weaviate:
     image: cr.weaviate.io/semitechnologies/weaviate:latest
-    container_name: weaviate
+    container_name: n8nInstall_weaviate
     profiles: ["weaviate"]
     restart: unless-stopped
     volumes:
-      - weaviate_data:/var/lib/weaviate
+      - n8nInstall_weaviate_data:/var/lib/weaviate
     environment:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "false"
@@ -638,25 +695,31 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - n8n_network
 
   ragapp:
     image: ragapp/ragapp:latest
-    container_name: ragapp
+    container_name: n8nInstall_ragapp
     profiles: ["ragapp"]
     restart: unless-stopped
+    networks:
+      - n8n_network
 
   portainer:
     image: portainer/portainer-ce:latest
-    container_name: portainer
+    container_name: n8nInstall_portainer
     profiles: ["portainer"]
     restart: unless-stopped
     volumes:
-      - portainer_data:/data
+      - n8nInstall_portainer_data:/data
       - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock
+    networks:
+      - n8n_network
 
   postiz:
     image: ghcr.io/gitroomhq/postiz-app:latest
-    container_name: postiz
+    container_name: n8nInstall_postiz
     profiles: ["postiz"]
     restart: always
     environment:
@@ -705,40 +768,46 @@ services:
       MASTODON_CLIENT_ID: ${MASTODON_CLIENT_ID}
       MASTODON_CLIENT_SECRET: ${MASTODON_CLIENT_SECRET}
     volumes:
-      - postiz-config:/config/
-      - postiz-uploads:/uploads/
+      - n8nInstall_postiz-config:/config/
+      - n8nInstall_postiz-uploads:/uploads/
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - n8n_network
 
   postgresus:
     image: rostislavdugin/postgresus:latest
-    container_name: postgresus
+    container_name: n8nInstall_postgresus
     profiles: ["postgresus"]
     restart: unless-stopped
     volumes:
-      - postgresus_data:/postgresus-data
+      - n8nInstall_postgresus_data:/postgresus-data
+    networks:
+      - n8n_network
 
   comfyui:
     image: yanwk/comfyui-boot:cu124-slim
-    container_name: comfyui
+    container_name: n8nInstall_comfyui
     profiles: ["comfyui"]
     restart: unless-stopped
     environment:
       - CLI_ARGS=--listen 0.0.0.0 --cpu
     volumes:
-      - comfyui_data:/home/runner
+      - n8nInstall_comfyui_data:/home/runner
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8188"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - n8n_network
 
   libretranslate:
     image: libretranslate/libretranslate:latest
-    container_name: libretranslate
+    container_name: n8nInstall_libretranslate
     profiles: ["libretranslate"]
     restart: unless-stopped
     environment:
@@ -759,24 +828,28 @@ services:
       - LT_THREADS=${LT_THREADS:-4}
       - LT_UPDATE_MODELS=${LT_UPDATE_MODELS:-false}
     volumes:
-      - libretranslate_api_keys:/app/db
-      - libretranslate_models:/home/libretranslate/.local:rw
+      - n8nInstall_libretranslate_api_keys:/app/db
+      - n8nInstall_libretranslate_models:/home/libretranslate/.local:rw
     healthcheck:
       test: ["CMD-SHELL", "./venv/bin/python scripts/healthcheck.py"]
+    networks:
+      - n8n_network
 
   python-runner:
     image: python:3.11-slim
-    container_name: python-runner
+    container_name: n8nInstall_python-runner
     profiles: ["python-runner"]
     restart: unless-stopped
     working_dir: /app
     command: /bin/sh -c 'if [ -f /app/requirements.txt ]; then python -m pip install --no-cache-dir -r /app/requirements.txt; fi; python /app/main.py'
     volumes:
       - ./python-runner:/app
+    networks:
+      - n8n_network
 
   paddleocr:
     image: paddlepaddle/paddle:3.1.0
-    container_name: paddleocr
+    container_name: n8nInstall_paddleocr
     profiles: ["paddleocr"]
     restart: unless-stopped
     # python -m paddlex --get_pipeline_config PP-ChatOCRv4-doc --save_path /app; \
@@ -787,19 +860,21 @@ services:
       exec python -m paddlex --serve --pipeline '/app/ocr_config.yml' --device cpu --port 8080"
     volumes:
       - ./paddlex/ocr_config.yml:/app/ocr_config.yml:ro
-      - paddleocr_cache:/root/.paddleocr
-      - paddle_cache:/root/.cache/paddle
-      - paddlex_data:/root/.paddlex
+      - n8nInstall_paddleocr_cache:/root/.paddleocr
+      - n8nInstall_paddle_cache:/root/.cache/paddle
+      - n8nInstall_paddlex_data:/root/.paddlex
     healthcheck:
       test:
         ["CMD-SHELL", "wget -qO- http://localhost:8080 > /dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - n8n_network
 
   waha:
     image: devlikeapro/waha:latest
-    container_name: waha
+    container_name: n8nInstall_waha
     profiles: ["waha"]
     restart: unless-stopped
     environment:
@@ -819,10 +894,12 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    networks:
+      - n8n_network
 
   ragflow:
     image: infiniflow/ragflow:latest
-    container_name: ragflow
+    container_name: n8nInstall_ragflow
     profiles: ["ragflow"]
     restart: unless-stopped
     environment:
@@ -845,7 +922,7 @@ services:
       - MINIO_PASSWORD=${RAGFLOW_MINIO_ROOT_PASSWORD}
       - MINIO_BUCKET=ragflow
     volumes:
-      - ragflow_data:/ragflow
+      - n8nInstall_ragflow_data:/ragflow
       - ./ragflow/nginx.conf:/etc/nginx/sites-available/default:ro
     depends_on:
       ragflow-elasticsearch:
@@ -856,10 +933,12 @@ services:
         condition: service_healthy
       ragflow-redis:
         condition: service_healthy
+    networks:
+      - n8n_network
 
   ragflow-mysql:
     image: mysql:8
-    container_name: ragflow-mysql
+    container_name: n8nInstall_ragflow-mysql
     profiles: ["ragflow"]
     restart: unless-stopped
     environment:
@@ -872,11 +951,13 @@ services:
       retries: 10
       start_period: 30s
     volumes:
-      - ragflow_mysql_data:/var/lib/mysql
+      - n8nInstall_ragflow_mysql_data:/var/lib/mysql
+    networks:
+      - n8n_network
 
   ragflow-minio:
     image: minio/minio
-    container_name: ragflow-minio
+    container_name: n8nInstall_ragflow-minio
     profiles: ["ragflow"]
     restart: unless-stopped
     entrypoint: sh
@@ -891,16 +972,18 @@ services:
       retries: 10
       start_period: 10s
     volumes:
-      - ragflow_minio_data:/data
+      - n8nInstall_ragflow_minio_data:/data
+    networks:
+      - n8n_network
 
   ragflow-redis:
     image: docker.io/valkey/valkey:8-alpine
-    container_name: ragflow-redis
+    container_name: n8nInstall_ragflow-redis
     profiles: ["ragflow"]
     restart: unless-stopped
     command: valkey-server --save 30 1 --loglevel warning --requirepass ${RAGFLOW_REDIS_PASSWORD}
     volumes:
-      - ragflow_redis_data:/data
+      - n8nInstall_ragflow_redis_data:/data
     cap_drop:
       - ALL
     cap_add:
@@ -917,10 +1000,12 @@ services:
       interval: 3s
       timeout: 10s
       retries: 10
+    networks:
+      - n8n_network
 
   ragflow-elasticsearch:
     image: elasticsearch:8.11.3
-    container_name: ragflow-elasticsearch
+    container_name: n8nInstall_ragflow-elasticsearch
     profiles: ["ragflow"]
     restart: unless-stopped
     environment:
@@ -942,7 +1027,7 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - ragflow_elasticsearch_data:/usr/share/elasticsearch/data
+      - n8nInstall_ragflow_elasticsearch_data:/usr/share/elasticsearch/data
     healthcheck:
       test:
         [
@@ -957,10 +1042,12 @@ services:
       resources:
         limits:
           memory: 8g
+    networks:
+      - n8n_network
 
   lightrag:
     image: ghcr.io/hkuds/lightrag:latest
-    container_name: lightrag
+    container_name: n8nInstall_lightrag
     profiles: ["lightrag"]
     restart: unless-stopped
     environment:
@@ -1035,8 +1122,8 @@ services:
       - WORKING_DIR=/app/data/rag_storage
 
     volumes:
-      - lightrag_data:/app/data/rag_storage
-      - lightrag_inputs:/app/data/inputs
+      - n8nInstall_lightrag_data:/app/data/rag_storage
+      - n8nInstall_lightrag_inputs:/app/data/inputs
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -1051,10 +1138,12 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+    networks:
+      - n8n_network
 
   docling:
     image: ${DOCLING_IMAGE:-ghcr.io/docling-project/docling-serve-cpu}
-    container_name: docling
+    container_name: n8nInstall_docling
     profiles: ["docling"]
     restart: unless-stopped
     environment:
@@ -1070,3 +1159,5 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+    networks:
+      - n8n_network
