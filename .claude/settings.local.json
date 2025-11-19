@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if [ -f .env ])",
+      "Bash(then echo 'Found .env file')",
+      "Bash(else echo \"No .env file found in current directory\")",
+      "Bash(fi)",
+      "Bash(wsl docker ps:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
