@@ -2,6 +2,8 @@
 .env
 .env.bak
 .env.test
+CREDENTIALS.txt
+backups/
 neo4j/
 searxng/settings.yml
 searxng/uwsgi*

@@ -1,0 +1,48 @@
+# Feature Registry
+# Central catalog of all features and fixes in the n8n-install project
+# Schema: REGISTRY.schema.json
+
+version: 1
+features:
+  - id: install-env-file-path-fix
+    title: "Fix Install Script .env Path Resolution Bug"
+    status: completed
+    type: fix
+    complexity: small
+    aip_path: docs/Agent Implementation Packets/install-env-file-path-fix/
+    created_date: "2025-12-01"
+    completed_date: "2025-12-01"
+    owner: claude-ai
+    description: "Fixed bug where install.sh Step 6 failed with '.env file not found' error. Script used relative paths without defining PROJECT_ROOT. Added proper path resolution using absolute paths."
+    tags:
+      - installer
+      - bug-fix
+      - path-resolution
+      - scripts
+    dependencies: []
+    related_issues:
+      - Install fails at Step 6 with .env not found
+      - Paths with spaces cause script failures
+
+  - id: cloudflare-tunnel-http-only-mode
+    title: "Configure Caddy for HTTP-Only Mode with Cloudflare Tunnel"
+    status: completed
+    type: feature
+    complexity: medium
+    aip_path: null
+    created_date: "2025-12-01"
+    completed_date: "2025-12-01"
+    owner: claude-ai
+    description: "Disabled Caddy's automatic HTTPS/Let's Encrypt to work with Cloudflare Tunnel. Caddy now serves HTTP-only on port 80, with Cloudflare Tunnel handling all HTTPS termination. Fixes NXDOMAIN errors and certificate acquisition failures."
+    tags:
+      - cloudflare-tunnel
+      - caddy
+      - https
+      - reverse-proxy
+      - networking
+    dependencies: []
+    related_issues:
+      - Let's Encrypt certificate errors (NXDOMAIN)
+      - Cloudflare Tunnel routes returning 404/502
+      - Services not accessible through tunnel
+      - DNS records not required for Cloudflare Tunnel setup

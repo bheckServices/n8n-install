@@ -1,0 +1,34 @@
+version: 1
+feature: {{FEATURE_SLUG}}
+status: pending
+constraints: []
+env_defaults: {}
+phases:
+  - id: implement
+    name: Implementation
+    description: Implement the feature with tests
+    tasks:
+      - id: code
+        title: Implement changes per README.md
+        files: []
+        status: pending
+      - id: tests
+        title: Add unit and integration tests
+        files: []
+        status: pending
+  - id: handoff
+    name: Documentation & Registry
+    description: Update docs and Feature Registry
+    tasks:
+      - id: update-readme
+        title: Update lightweight AIP README.md with final details
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/README.md]
+        status: pending
+      - id: registry
+        title: Add or update Feature Registry entry
+        files: [docs/features/REGISTRY.yaml]
+        status: pending
+verification:
+  commands: []
+  acceptance: []
+

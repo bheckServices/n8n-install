@@ -1,0 +1,92 @@
+version: 1
+feature: install-env-file-path-fix
+status: in_progress
+constraints:
+  - Must work with paths containing spaces
+  - Must not break existing installs
+  - Script-only fix (no Docker changes needed)
+env_defaults: {}
+phases:
+  - id: investigate
+    name: Investigation
+    description: Find the root cause of the .env path resolution bug
+    tasks:
+      - id: locate-error
+        title: Find exact line in scripts causing ".env file not found" error
+        files:
+          - scripts/install.sh
+          - scripts/06_start_services.sh (if exists)
+        status: pending
+      - id: analyze-path-handling
+        title: Check how PROJECT_ROOT and .env paths are used in Step 6
+        files:
+          - scripts/install.sh
+        status: pending
+      - id: reproduce
+        title: Reproduce bug on test system with path containing spaces
+        files: []
+        status: pending
+
+  - id: implement
+    name: Implementation
+    description: Fix the path resolution issue
+    tasks:
+      - id: fix-path-quoting
+        title: Add proper quoting around paths and ensure PROJECT_ROOT is used
+        files:
+          - scripts/install.sh
+        status: pending
+      - id: verify-working-dir
+        title: Ensure script changes to correct working directory before sourcing .env
+        files:
+          - scripts/install.sh
+        status: pending
+
+  - id: testing
+    name: Testing
+    description: Validate the fix works in all scenarios
+    tasks:
+      - id: test-spaces
+        title: Test install with path containing spaces
+        files: []
+        status: pending
+      - id: test-normal
+        title: Test install with standard path (no spaces)
+        files: []
+        status: pending
+      - id: smoke-test
+        title: Run status_report.sh and validate_install.sh after successful install
+        files: []
+        status: pending
+
+  - id: handoff
+    name: Documentation & Registry
+    description: Update docs and Feature Registry
+    tasks:
+      - id: update-troubleshooting
+        title: Add this issue to TROUBLESHOOTING.md if it's a common error
+        files:
+          - docs/ai/TROUBLESHOOTING.md
+        status: pending
+      - id: update-readme
+        title: Update AIP README.md with final root cause and solution
+        files:
+          - docs/Agent Implementation Packets/install-env-file-path-fix/README.md
+        status: pending
+      - id: registry
+        title: Add entry to Feature Registry
+        files:
+          - docs/features/REGISTRY.yaml
+        status: pending
+
+verification:
+  commands:
+    - sudo bash ./scripts/install.sh  # Should complete all 7 steps
+    - docker compose -p localai ps  # Should show services running
+    - bash scripts/status_report.sh  # Should show healthy status
+  acceptance:
+    - Install script completes without .env errors
+    - All selected services start successfully
+    - Works with paths containing spaces
+    - Works with standard paths
+    - No regression on existing installs

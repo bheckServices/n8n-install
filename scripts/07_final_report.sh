@@ -430,3 +430,163 @@ echo "======================================================================"
 echo
 log_info "Thank you for using this repository!"
 echo
+
+# --- Save Credentials to File ---
+CREDENTIALS_FILE="$PROJECT_ROOT/CREDENTIALS.txt"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+log_info "Saving credentials to: $CREDENTIALS_FILE"
+
+{
+    echo "========================================================================"
+    echo "  n8n-install - Service Credentials"
+    echo "  Generated: $TIMESTAMP"
+    echo "========================================================================"
+    echo
+    echo "⚠️  SECURITY WARNING: This file contains sensitive credentials!"
+    echo "   - Store this file securely"
+    echo "   - Do NOT commit to git (already in .gitignore)"
+    echo "   - Delete after copying to password manager"
+    echo
+    echo "========================================================================"
+    echo
+
+    if is_profile_active "n8n"; then
+        echo "================================= n8n ================================="
+        echo
+        echo "Host: ${N8N_HOSTNAME}"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    if is_profile_active "supabase"; then
+        echo "================================= Supabase ============================"
+        echo
+        echo "External Host (via Caddy): supabase.${DOMAIN_NAME:-yourdomain.com}"
+        echo "Studio User: ${SUPABASE_STUDIO_EMAIL:-not set}"
+        echo "Studio Password: ${SUPABASE_STUDIO_PASSWORD:-not set}"
+        echo
+        echo "Internal API Gateway: http://kong:8000"
+        echo "Service Role Secret: ${SERVICE_ROLE_KEY:-not set}"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    if is_profile_active "monitoring"; then
+        echo "================================= Grafana ============================="
+        echo
+        echo "Host: grafana.${DOMAIN_NAME:-yourdomain.com}"
+        echo "User: ${GRAFANA_USER:-admin}"
+        echo "Password: ${GRAFANA_PASSWORD:-not set}"
+        echo
+        echo "========================================================================"
+        echo
+
+        echo "================================= Prometheus =========================="
+        echo
+        echo "Host: prometheus.${DOMAIN_NAME:-yourdomain.com}"
+        echo "User: ${PROMETHEUS_USER:-not set}"
+        echo "Password: ${PROMETHEUS_PASSWORD:-not set}"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    if is_profile_active "searxng"; then
+        echo "================================= Searxng ============================="
+        echo
+        echo "Host: searxng.${DOMAIN_NAME:-yourdomain.com}"
+        echo "User: ${SEARXNG_USER:-not set}"
+        echo "Password: ${SEARXNG_PASSWORD:-not set}"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    if is_profile_active "postiz"; then
+        echo "================================= Postiz =============================="
+        echo
+        echo "Host: postiz.${DOMAIN_NAME:-yourdomain.com}"
+        echo "Internal Access (from n8n): http://postiz:5000"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    if is_profile_active "postgresus"; then
+        echo "================================= Postgresus =========================="
+        echo
+        echo "Host: postgresus.${DOMAIN_NAME:-yourdomain.com}"
+        echo "UI (external): https://postgresus.${DOMAIN_NAME:-yourdomain.com}"
+        echo "UI (internal): http://postgresus:4005"
+        echo
+        echo "------ Backup Target (internal PostgreSQL) ------"
+        echo "Host: postgres"
+        echo "Port: 5432"
+        echo "Username: postgres"
+        echo "Password: ${POSTGRES_PASSWORD:-not set}"
+        echo "DB name: postgres"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    echo "==================== Redis (Valkey) ====================="
+    echo
+    echo "Internal Host: redis"
+    echo "Internal Port: 6379"
+    echo "Password: ${REDIS_PASSWORD:-empty}"
+    echo "(Note: For internal service communication)"
+    echo
+    echo "========================================================================"
+    echo
+
+    echo "==================== PostgreSQL (Standalone) ====================="
+    echo
+    echo "Host: postgres"
+    echo "Port: 5432"
+    echo "Database: postgres"
+    echo "User: postgres"
+    echo "Password: ${POSTGRES_PASSWORD:-not set}"
+    echo
+    echo "(Note: Used by n8n, Langfuse, and other services)"
+    echo "(Separate from Supabase's internal PostgreSQL)"
+    echo
+    echo "========================================================================"
+    echo
+
+    if is_profile_active "cloudflare-tunnel"; then
+        echo "==================== Cloudflare Tunnel ====================="
+        echo
+        echo "Tunnel Token: ${CLOUDFLARE_TUNNEL_TOKEN:-not set}"
+        echo
+        echo "Security Note: Close ports 80, 443, 7687 after confirming tunnel works"
+        echo
+        echo "========================================================================"
+        echo
+    fi
+
+    echo
+    echo "========================================================================"
+    echo "  End of Credentials File"
+    echo "========================================================================"
+    echo
+    echo "To view this file later:"
+    echo "  cat $CREDENTIALS_FILE"
+    echo
+    echo "To delete this file after copying to password manager:"
+    echo "  rm $CREDENTIALS_FILE"
+    echo
+
+} > "$CREDENTIALS_FILE"
+
+# Set restrictive permissions on credentials file
+chmod 600 "$CREDENTIALS_FILE"
+
+log_success "Credentials saved to: $CREDENTIALS_FILE (permissions: 600)"
+echo
+echo "📄 Credentials file location: $CREDENTIALS_FILE"
+echo "🔒 File permissions set to 600 (read/write for owner only)"
+echo

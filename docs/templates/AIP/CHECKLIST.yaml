@@ -1,0 +1,86 @@
+version: 1
+feature: {{FEATURE_SLUG}}
+status: pending
+constraints:
+  - Respect privacy and security constraints
+parity:
+  databricks: true
+  postgres: true
+env_defaults: {}
+phases:
+  - id: design
+    name: Design & Contracts
+    description: Finalize contracts and implementation plan
+    tasks:
+      - id: contracts
+        title: Complete CONTRACTS.md (signals, thresholds, events, fallbacks)
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/CONTRACTS.md]
+        status: pending
+      - id: backend_plan
+        title: Complete BACKEND_IMPLEMENTATION.md (files, flags, pseudocode)
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/BACKEND_IMPLEMENTATION.md]
+        status: pending
+  - id: backend
+    name: Backend Implementation
+    description: Implement backend changes
+    tasks:
+      - id: impl-core
+        title: Implement core logic per BACKEND_IMPLEMENTATION.md
+        files: []
+        status: pending
+      - id: tests-backend
+        title: Add unit/integration tests for backend changes
+        files: []
+        status: pending
+  - id: frontend
+    name: Frontend Implementation
+    description: Implement UI/UX per ORCHESTRATION_AND_UI.md
+    tasks:
+      - id: impl-ui
+        title: Implement UI/UX changes
+        files: []
+        status: pending
+      - id: tests-frontend
+        title: Update/add frontend unit tests
+        files: []
+        status: pending
+  - id: docs
+    name: Docs Correction & Updates
+    description: Update global docs as required
+    tasks:
+      - id: global-docs
+        title: Update repository docs as required
+        files: []
+        status: pending
+  - id: observe
+    name: Observability & Rollout
+    description: Metrics, dashboards, flip/rollback
+    tasks:
+      - id: metrics
+        title: Add metrics per OBSERVABILITY.md
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/OBSERVABILITY.md]
+        status: pending
+      - id: runbook
+        title: Add RUNBOOK and execute validation
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/RUNBOOK.md]
+        status: pending
+  - id: handoff
+    name: Docs & Handoff
+    description: Final doc sync and registry update
+    tasks:
+      - id: context
+        title: Update CONTEXT.md with final behavior
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/CONTEXT.md]
+        status: pending
+      - id: prompt-qa
+        title: Run Agent Prompt QA Checklist before generating prompt
+        files: [docs/templates/AIP/AGENT_PROMPT_QA_CHECKLIST.md]
+        status: pending
+      - id: agent-prompt
+        title: Generate AGENT_PROMPT.txt last (follow AGENT_PROMPT_AUTHORING_GUIDE.md)
+        files: [docs/Agent Implementation Packets/{{FEATURE_SLUG}}/AGENT_PROMPT.txt, docs/templates/AIP/AGENT_PROMPT_AUTHORING_GUIDE.md]
+        status: pending
+verification:
+  commands: []
+  acceptance: []
+

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgenticFlywheel Features Registry Schema (portable)",
+  "type": "object",
+  "required": ["features"],
+  "properties": {
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "status", "scope"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "description": {"type": "string"},
+          "scope": {"type": "array", "items": {"type": "string"}},
+          "status": {"type": "string", "enum": ["planned", "in_progress", "in_rollout", "active", "deprecated", "abandoned", "incomplete"]},
+          "owners": {"type": "array", "items": {"type": "string"}},
+          "configs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {"type": "string"},
+                "default": {"type": ["string", "number", "boolean"]},
+                "package": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            }
+          },
+          "contracts": {"type": "object"},
+          "aips": {"type": "array", "items": {"type": "string"}},
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "type"],
+              "properties": {
+                "id": {"type": "string", "description": "Feature ID this feature depends on"},
+                "type": {"type": "string", "enum": ["api", "event", "database", "library", "service"]},
+                "strength": {"type": "string", "enum": ["hard", "soft"], "default": "hard", "description": "Hard dependencies block deployment; soft are optional"},
+                "contract": {"type": "string", "description": "Specific contract name (e.g., endpoint, event name)"},
+                "notes": {"type": "string"}
+              }
+            },
+            "description": "Typed dependencies with relationship metadata"
+          },
+          "rollout": {"type": "object"},
+          "metrics": {"type": "array", "items": {"type": "string"}},
+          "compliance": {"type": "array", "items": {"type": "string"}},
+          "created_at": {"type": "string", "format": "date-time", "description": "ISO 8601 timestamp when feature was created"},
+          "deprecated_since": {"type": "string", "format": "date-time", "description": "ISO 8601 timestamp when feature was deprecated"},
+          "replaces": {"type": "string", "description": "Feature ID this feature replaces"},
+          "migration_path": {"type": "string", "description": "Link to migration guide or docs"},
+          "risk": {"type": "string", "enum": ["low", "medium", "high"], "description": "Risk level of changing this feature"},
+          "blast_radius": {"type": "string", "enum": ["isolated", "subsystem", "system-wide"], "description": "Impact scope if this feature fails"},
+          "last_updated": {"type": "string", "format": "date-time", "description": "ISO 8601 timestamp of last update"}
+        }
+      }
+    }
+  }
+}
+

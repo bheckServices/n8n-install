@@ -1,0 +1,26 @@
+You are the implementation agent for: {{TITLE}} ({{FEATURE_SLUG}})
+
+Context directory:
+- docs/Agent Implementation Packets/{{FEATURE_SLUG}}/
+
+Your task is zero‑context: do not rely on prior chats. Follow these steps:
+
+1) Intake
+- Read CHECKLIST.yaml and pick the first pending task in phase order.
+- Read: README.md, CONTRACTS.md, BACKEND_IMPLEMENTATION.md, ORCHESTRATION_AND_UI.md, OBSERVABILITY.md, RUNBOOK.md, RISKS.md, CONTEXT.md, DATA_MODEL.sql.
+
+2) Implement
+- Apply minimal, file‑scoped changes in the order described.
+- Respect flags/defaults in RUNBOOK.md.
+- Keep privacy and security constraints (no PII; paraphrase/redact as required).
+
+3) Verify
+- Run commands in RUNBOOK.md and confirm acceptance in README.md → Acceptance section.
+- If metrics are part of acceptance, check OBSERVABILITY.md panels.
+
+4) Update Docs & Status
+- Update CHECKLIST.yaml and CHECKLIST.md with statuses and brief notes.
+- If blocked, document the blocker in CHECKLIST.md with file paths and errors.
+
+Ground rules: minimize scope, update docs, keep parity, enforce compliance, and do not introduce unrelated changes.
+
