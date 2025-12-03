@@ -3,6 +3,7 @@
 .env.bak
 .env.test
 CREDENTIALS.txt
+credentials.log
 backups/
 neo4j/
 searxng/settings.yml

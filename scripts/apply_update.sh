@@ -53,6 +53,18 @@ bash "$SCRIPT_DIR/05_configure_services.sh" || {
 }
 log_success "Service configuration completed."
 
+# --- Stop existing containers before pulling new images ---
+log_info "Stopping existing containers to prepare for update..."
+if docker ps -q --filter "name=n8nInstall" | grep -q .; then
+    log_info "Stopping running containers..."
+    docker stop $(docker ps -q --filter "name=n8nInstall") 2>/dev/null || true
+    docker stop $(docker ps -q --filter "name=supabase") 2>/dev/null || true
+    log_success "Containers stopped."
+else
+    log_info "No running containers found, skipping stop."
+fi
+# --- End of container stop ---
+
 # Pull latest versions of selected containers based on updated .env
 log_info "Pulling latest versions of selected containers..."
 COMPOSE_FILES_FOR_PULL=("-f" "$PROJECT_ROOT/docker-compose.yml")
@@ -78,31 +90,75 @@ $COMPOSE_CMD -p "localai" "${COMPOSE_FILES_FOR_PULL[@]}" pull --ignore-buildable
   exit 1
 }
 
-# Start services using the 06_run_services.sh script
-log_info "Running Services..."
+log_success "Docker images pulled successfully!"
+
+# --- Save Credentials to File ---
+log_info "Saving service credentials to file..."
+CREDENTIALS_FILE="$PROJECT_ROOT/credentials.log"
+{
+    echo "=========================================="
+    echo "Service Credentials - $(date)"
+    echo "=========================================="
+    echo ""
+    bash "$SCRIPT_DIR/07_final_report.sh" 2>&1
+} > "$CREDENTIALS_FILE"
+
+if [ -f "$CREDENTIALS_FILE" ]; then
+    log_success "Credentials saved to: $CREDENTIALS_FILE"
+    log_info "View anytime with: cat $CREDENTIALS_FILE"
+else
+    log_warning "Failed to save credentials file."
+fi
+# --- End of Credentials Save ---
+
+log_info ""
+log_success "Update configuration completed successfully!"
+log_info ""
+log_info "=========================================="
+log_info "FINAL STEP: Starting all services..."
+log_info "=========================================="
+log_info ""
+
+# Start services using the 06_run_services.sh script - THIS IS THE LAST STEP
 bash "$RUN_SERVICES_SCRIPT" || { log_error "Failed to start services. Check logs for details."; exit 1; }
 
 log_success "Services started successfully!"
 
-# --- Fix Caddy Configuration for Cloudflare Tunnel ---
-log_info "Checking and fixing Caddy configuration..."
+# Wait for Caddy to fully initialize
+log_info "Waiting for Caddy to initialize..."
+sleep 5
+
+# --- Fix Caddy Configuration for Cloudflare Tunnel (AFTER Caddy is running) ---
+log_info "Running Caddy diagnostics and fix..."
+CADDY_FIXED=false
 if [ -f "$SCRIPT_DIR/diagnose_and_fix_caddy.sh" ]; then
-    bash "$SCRIPT_DIR/diagnose_and_fix_caddy.sh" || {
-        log_warning "Caddy diagnostics failed or found issues. This may affect HTTPS."
+    if bash "$SCRIPT_DIR/diagnose_and_fix_caddy.sh"; then
+        CADDY_FIXED=true
+        log_success "Caddy configuration verified and fixed."
+    else
+        log_warning "Caddy diagnostics encountered issues."
         log_info "You can manually run: bash ./scripts/diagnose_and_fix_caddy.sh"
-    }
+    fi
 else
-    log_warning "Caddy diagnostic script not found. Skipping Caddy fix."
+    log_warning "Caddy diagnostic script not found at: $SCRIPT_DIR/diagnose_and_fix_caddy.sh"
 fi
 # --- End of Caddy Fix ---
 
-log_success "Update application completed successfully!"
+# Restart services if Caddy was fixed to ensure clean state
+if [ "$CADDY_FIXED" = true ]; then
+    log_info ""
+    log_info "=========================================="
+    log_info "Restarting services with fixed Caddy config..."
+    log_info "=========================================="
+    log_info ""
+    bash "$RUN_SERVICES_SCRIPT" || {
+        log_warning "Failed to restart services after Caddy fix."
+        log_info "Services may still be running with old configuration."
+    }
+    log_success "Services restarted with corrected configuration!"
+fi
 
-# --- Display Final Report with Credentials ---
-bash "$SCRIPT_DIR/07_final_report.sh" || {
-    log_warning "Failed to display the final report. This does not affect the update."
-    # We don't exit 1 here as the update itself was successful.
-}
-# --- End of Final Report ---
+log_success "Update completed successfully!"
+log_info "All services are now running with the latest updates."
 
 exit 0 
