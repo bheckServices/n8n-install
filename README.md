@@ -231,7 +231,50 @@ This script will:
 4.  Ask if you want to re-run the n8n workflow import (useful if you skipped this during the initial installation or want to refresh the community workflows).
 5.  Restart all services with the new updates.
 
-## Cleaning up Docker
+## Managing Containers and Volumes
+
+### Reset Containers (Preserve Data)
+
+If you need to reset all containers without losing data:
+
+```bash
+bash ./scripts/reset_containers.sh
+```
+
+This script will:
+- Stop and remove all containers
+- Preserve all volumes (your data is safe)
+- Ask for confirmation before proceeding
+
+### Recover Volumes After Update
+
+If your data disappeared after an update (due to volume renaming):
+
+```bash
+bash ./scripts/recover_volumes.sh
+```
+
+This script will migrate data from old volume names to new prefixed volumes.
+
+### List All Volumes
+
+To see all Docker volumes for this project:
+
+```bash
+bash ./scripts/list_volumes.sh
+```
+
+### Fix Line Endings (Windows/WSL)
+
+If you're working on Windows or WSL and scripts fail due to line ending issues:
+
+```bash
+bash ./fix_line_endings.sh
+```
+
+This will convert all files from DOS (CRLF) to Unix (LF) format and make scripts executable.
+
+### Cleaning up Docker
 
 If you need to free up disk space, you can run the Docker cleanup script. This script removes all unused Docker containers, images, and volumes.
 
@@ -239,7 +282,7 @@ If you need to free up disk space, you can run the Docker cleanup script. This s
 sudo bash ./scripts/docker_cleanup.sh
 ```
 
-This can be useful for removing old images and freeing up space, but be aware that it will remove all unused data.
+**⚠️ WARNING:** This will remove ALL unused data including volumes. Use with caution!
 
 ## Important Links
 

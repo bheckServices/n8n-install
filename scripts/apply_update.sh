@@ -82,6 +82,20 @@ $COMPOSE_CMD -p "localai" "${COMPOSE_FILES_FOR_PULL[@]}" pull --ignore-buildable
 log_info "Running Services..."
 bash "$RUN_SERVICES_SCRIPT" || { log_error "Failed to start services. Check logs for details."; exit 1; }
 
+log_success "Services started successfully!"
+
+# --- Fix Caddy Configuration for Cloudflare Tunnel ---
+log_info "Checking and fixing Caddy configuration..."
+if [ -f "$SCRIPT_DIR/diagnose_and_fix_caddy.sh" ]; then
+    bash "$SCRIPT_DIR/diagnose_and_fix_caddy.sh" || {
+        log_warning "Caddy diagnostics failed or found issues. This may affect HTTPS."
+        log_info "You can manually run: bash ./scripts/diagnose_and_fix_caddy.sh"
+    }
+else
+    log_warning "Caddy diagnostic script not found. Skipping Caddy fix."
+fi
+# --- End of Caddy Fix ---
+
 log_success "Update application completed successfully!"
 
 # --- Display Final Report with Credentials ---

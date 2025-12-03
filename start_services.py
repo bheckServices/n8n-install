@@ -171,29 +171,35 @@ def prepare_dify_env():
 def stop_existing_containers():
     """Stop and remove existing containers for our unified project ('localai')."""
     print("Stopping and removing existing containers for the unified project 'localai'...")
-    
-    # Base command
+
+    # Simple approach: Just stop all containers with the localai project name
+    # Docker Compose will automatically handle all services in the project
     cmd = ["docker", "compose", "-p", "localai"]
 
-    # Get all profiles from the main docker-compose.yml to ensure all services can be brought down
-    all_profiles = get_all_profiles("docker-compose.yml")
-    for profile in all_profiles:
-        cmd.extend(["--profile", profile])
-    
+    # Add main compose file
     cmd.extend(["-f", "docker-compose.yml"])
 
     # Check if the Supabase Docker Compose file exists. If so, include it in the 'down' command.
     supabase_compose_path = os.path.join("supabase", "docker", "docker-compose.yml")
     if os.path.exists(supabase_compose_path):
         cmd.extend(["-f", supabase_compose_path])
-    
+
     # Check if the Dify Docker Compose file exists. If so, include it in the 'down' command.
     dify_compose_path = os.path.join("dify", "docker", "docker-compose.yaml")
     if os.path.exists(dify_compose_path):
         cmd.extend(["-f", dify_compose_path])
 
-    cmd.append("down")
-    run_command(cmd)
+    # Use --remove-orphans to clean up any leftover containers
+    cmd.extend(["down", "--remove-orphans"])
+
+    try:
+        run_command(cmd)
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: docker compose down failed with error: {e}")
+        print("Attempting to stop containers directly...")
+        # Fallback: stop containers by name filter
+        subprocess.run(["docker", "stop", "$(docker ps -q --filter name=n8nInstall)"], shell=True, check=False)
+        subprocess.run(["docker", "stop", "$(docker ps -q --filter name=supabase)"], shell=True, check=False)
 
 def start_supabase():
     """Start the Supabase services (using its compose file)."""

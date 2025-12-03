@@ -14,7 +14,9 @@
       "Bash(docker logs:*)",
       "Bash(cat:*)",
       "Bash(wsl docker logs:*)",
-      "Bash(wsl cat:*)"
+      "Bash(wsl cat:*)",
+      "Bash(sudo bash:*)",
+      "Bash(wsl docker volume ls:*)"
     ],
     "deny": [],
     "ask": []
