@@ -16,7 +16,21 @@
       "Bash(wsl docker logs:*)",
       "Bash(wsl cat:*)",
       "Bash(sudo bash:*)",
-      "Bash(wsl docker volume ls:*)"
+      "Bash(wsl docker volume ls:*)",
+      "Bash(if [ -f \"c:\\Users\\Bailey\\Documents\\GitHub\\AA GitHub2\\n8n-install\\supabase\\docker\\docker-compose.yml\" ])",
+      "Bash(then echo \"Supabase docker-compose.yml exists\")",
+      "Bash(else echo \"Supabase docker-compose.yml does NOT exist\")",
+      "Bash(if [ -d \"supabase\" ])",
+      "Bash(then echo \"Supabase directory exists\")",
+      "Bash(else echo \"No supabase directory found\")",
+      "Bash(then grep \"^COMPOSE_PROFILES=\" .env)",
+      "Bash(else echo \".env not found\")",
+      "Bash(if [ -d \"supabase/docker\" ])",
+      "Bash(then echo \"Supabase is installed\")",
+      "Bash(else echo \"Supabase NOT installed\")",
+      "Bash(if [ -f \"supabase/docker/docker-compose.yml\" ])",
+      "Bash(then grep -A 5 \"db:\" supabase/docker/docker-compose.yml)",
+      "Bash(else echo \"Supabase docker-compose.yml not found - need to install Supabase first\")"
     ],
     "deny": [],
     "ask": []
