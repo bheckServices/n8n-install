@@ -205,6 +205,41 @@ Cloudflare Tunnel provides zero-trust access to your services without exposing a
 
 See the Cloudflare Tunnel guide: [cloudflare-instructions.md](cloudflare-instructions.md)
 
+## 🗄️ PostgreSQL Remote Access (DataGrip & n8n)
+
+Access your PostgreSQL database remotely for development and automation:
+
+### Quick Start
+
+- **📖 Quick Setup Guide:** [POSTGRES_REMOTE_ACCESS_QUICKSTART.md](POSTGRES_REMOTE_ACCESS_QUICKSTART.md) - Get connected in 5 steps
+- **📚 Full Documentation:** [CLOUDFLARE_TUNNEL_POSTGRES.md](CLOUDFLARE_TUNNEL_POSTGRES.md) - Complete setup with security best practices
+
+### What You Can Do
+
+- ✅ Connect **DataGrip** or other database tools to your remote PostgreSQL
+- ✅ Access from **n8n workflows** on any instance (local or remote)
+- ✅ Secure **TCP connections** via Cloudflare Tunnel (no port exposure)
+- ✅ **SSL/TLS encryption** for all database connections
+- ✅ Access to all databases: `postgres`, `n8n`, `langfuse`
+
+### How It Works
+
+1. Configure Cloudflare Tunnel for PostgreSQL TCP access (`postgres.yourdomain.com:5432`)
+2. Create a dedicated remote access user with limited permissions
+3. Connect from DataGrip, n8n, or any PostgreSQL client using standard connection strings
+
+**Example Connection:**
+
+```plaintext
+Host: postgres.yourdomain.com
+Port: 5432
+Database: postgres
+User: remote_user
+SSL: Enabled ✓
+```
+
+See the [Quick Start Guide](POSTGRES_REMOTE_ACCESS_QUICKSTART.md) to get started!
+
 
 ### Using Pre-installed Libraries in n8n's Custom JavaScript
 

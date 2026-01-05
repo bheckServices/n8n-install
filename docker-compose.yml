@@ -457,6 +457,11 @@ services:
     volumes:
       - n8nInstall_postgres_data:/var/lib/postgresql/data
       - ./postgres:/docker-entrypoint-initdb.d:ro
+    # Expose PostgreSQL port for remote access via Cloudflare Tunnel
+    # This port is NOT published to the host, only accessible within Docker network
+    # Remote access should be configured through Cloudflare Tunnel TCP service
+    expose:
+      - "5432"
     networks:
       - n8n_network
 
